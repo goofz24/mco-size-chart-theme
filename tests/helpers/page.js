@@ -10,10 +10,11 @@ const { THEME_ROOT, renderSection, renderSnippet, sectionDefaults } = require('.
 // Stand-ins for the CSS variables Dawn's theme.liquid prints from theme settings.
 const THEME_VARIABLES = `
   :root, .color-scheme-1 {
-    --color-foreground: 18, 18, 18;
-    --color-background: 255, 255, 255;
-    --color-shadow: 18, 18, 18;
-    --gradient-background: #ffffff;
+    --color-foreground: 28, 31, 26;
+    --color-background: 247, 245, 240;
+    --color-shadow: 28, 31, 26;
+    --color-button: 31, 77, 58;
+    --gradient-background: #f7f5f0;
     --font-body-family: Arial, sans-serif;
     --font-heading-family: Arial, sans-serif;
     --font-body-scale: 1;
