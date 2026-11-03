@@ -1,0 +1,69 @@
+{%- doc -%}
+  Loads Google Tag Manager on storefront pages when it is turned on in
+  Theme settings > Google Tag Manager.
+
+  - Skipped inside the theme editor, so editing the theme doesn't send test data.
+  - The container ID must look like GTM-XXXXXXX (letters and numbers only),
+    so a typo can't inject markup into every page.
+  - Checkout and thank-you pages don't use theme.liquid; track those with
+    a Shopify Custom Pixel instead (see docs/gtm-ga4.md).
+
+  @param {string} part - "head" for the script, "body" for the noscript iframe
+
+  @example
+  {% render 'google-tag-manager', part: 'head' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign gtm_id = settings.gtm_container_id | strip | upcase
+  assign gtm_ok = false
+  if settings.gtm_enabled and gtm_id.size > 4 and gtm_id.size < 20
+    assign gtm_prefix = gtm_id | slice: 0, 4
+    if gtm_prefix == 'GTM-'
+      assign gtm_ok = true
+      assign gtm_rest = gtm_id | slice: 4, 20
+      assign allowed = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+      assign gtm_chars = gtm_rest | split: ''
+      for char in gtm_chars
+        unless allowed contains char
+          assign gtm_ok = false
+        endunless
+      endfor
+    endif
+  endif
+  if request.design_mode
+    assign gtm_ok = false
+  endif
+-%}
+
+{%- if gtm_ok -%}
+  {%- if part == 'head' -%}
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        theme_template: {{ template.name | json }},
+        page_language: {{ request.locale.iso_code | json }}
+      });
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', {{ gtm_id | json }});
+    </script>
+  {%- elsif part == 'body' -%}
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id={{ gtm_id | url_encode }}"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+        title="Google Tag Manager"
+      ></iframe>
+    </noscript>
+  {%- endif -%}
+{%- endif -%}

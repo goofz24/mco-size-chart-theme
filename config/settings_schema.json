@@ -1466,5 +1466,27 @@
         "label": "t:settings_schema.customer_accounts.settings.customer_account_menu.label"
       }
     ]
+  },
+  {
+    "name": "Google Tag Manager",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Loads Google Tag Manager on storefront pages. It never loads inside the theme editor. Use a Shopify Custom Pixel for checkout and thank-you pages."
+      },
+      {
+        "type": "checkbox",
+        "id": "gtm_enabled",
+        "label": "Load Google Tag Manager",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "gtm_container_id",
+        "label": "Container ID",
+        "placeholder": "GTM-XXXXXXX",
+        "info": "Find it in Google Tag Manager, next to your container name."
+      }
+    ]
   }
 ]
