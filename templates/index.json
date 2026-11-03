@@ -6,8 +6,15 @@
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Browse our latest products",
-            "heading_size": "h0"
+            "heading": "Clothes that fit the first time",
+            "heading_size": "hxl"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "Every piece comes with a size chart you can actually read.",
+            "text_style": "body"
           }
         },
         "button": {
@@ -24,17 +31,18 @@
       },
       "block_order": [
         "heading",
+        "text",
         "button"
       ],
       "settings": {
-        "image_overlay_opacity": 40,
+        "image_overlay_opacity": 30,
         "image_height": "large",
-        "desktop_content_position": "bottom-center",
+        "desktop_content_position": "middle-left",
         "show_text_box": false,
         "image_behavior": "none",
-        "desktop_content_alignment": "center",
+        "desktop_content_alignment": "left",
         "color_scheme": "scheme-3",
-        "mobile_content_alignment": "center",
+        "mobile_content_alignment": "left",
         "stack_images_on_mobile": false,
         "show_text_below": false
       }
@@ -42,14 +50,14 @@
     "featured_collection": {
       "type": "featured-collection",
       "settings": {
-        "title": "Featured products",
+        "title": "New arrivals",
         "heading_size": "h2",
         "description": "",
         "show_description": false,
         "description_style": "body",
         "collection": "all",
-        "products_to_show": 8,
-        "columns_desktop": 4,
+        "products_to_show": 6,
+        "columns_desktop": 3,
         "color_scheme": "scheme-1",
         "full_width": false,
         "show_view_all": true,
@@ -66,10 +74,64 @@
         "padding_top": 44,
         "padding_bottom": 36
       }
+    },
+    "how_sizing": {
+      "type": "multicolumn",
+      "blocks": {
+        "step_size": {
+          "type": "column",
+          "settings": {
+            "title": "Find your size",
+            "text": "<p>Open the size chart on any product. The size you picked is highlighted.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "step_unit": {
+          "type": "column",
+          "settings": {
+            "title": "Pick your unit",
+            "text": "<p>Switch between inches and centimeters in one tap.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "step_draw": {
+          "type": "column",
+          "settings": {
+            "title": "See where it's measured",
+            "text": "<p>Tap Chest, Length or Sleeve and the drawing shows exactly where to measure.</p>",
+            "link_label": "",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "step_size",
+        "step_unit",
+        "step_draw"
+      ],
+      "settings": {
+        "title": "How our sizing works",
+        "heading_size": "h1",
+        "image_width": "third",
+        "image_ratio": "adapt",
+        "columns_desktop": 3,
+        "column_alignment": "left",
+        "background_style": "none",
+        "button_label": "",
+        "button_link": "",
+        "color_scheme": "scheme-2",
+        "columns_mobile": "1",
+        "swipe_on_mobile": false,
+        "padding_top": 56,
+        "padding_bottom": 56
+      }
     }
   },
   "order": [
     "image_banner",
+    "how_sizing",
     "featured_collection"
   ]
 }
