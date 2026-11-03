@@ -387,6 +387,15 @@
       "min_error": "Este artículo tiene un mínimo de {{ min }}.",
       "max_error": "Este artículo tiene un máximo de {{ max }}.",
       "step_error": "Solo puedes agregar este artículo en incrementos de {{ step }}"
+    },
+    "size_chart": {
+      "unit_toggle_label": "Unidad de medida",
+      "inches": "pulg",
+      "centimeters": "cm",
+      "caption_unit_in": "medidas en pulgadas",
+      "caption_unit_cm": "medidas en centímetros",
+      "selected_size": "(tu talla seleccionada)",
+      "editor_notice": "Guía de tallas: este producto aún no tiene una guía de tallas. Vincula una en el metacampo \"Size chart\" del producto o elige una guía alternativa en la configuración de esta sección. Los clientes no ven este mensaje."
     }
   },
   "localization": {

@@ -376,6 +376,15 @@
       "min_error": "This item has a minimum of {{ min }}",
       "max_error": "This item has a maximum of {{ max }}",
       "step_error": "You can only add this item in increments of {{ step }}"
+    },
+    "size_chart": {
+      "unit_toggle_label": "Measurement unit",
+      "inches": "in",
+      "centimeters": "cm",
+      "caption_unit_in": "measurements in inches",
+      "caption_unit_cm": "measurements in centimeters",
+      "selected_size": "(your selected size)",
+      "editor_notice": "Size chart: this product has no size chart yet. Link one in the product's \"Size chart\" metafield, or pick a fallback chart in this section's settings. Shoppers don't see this message."
     }
   },
   "localization": {

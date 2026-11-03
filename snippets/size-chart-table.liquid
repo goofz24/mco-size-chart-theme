@@ -1,0 +1,74 @@
+{%- doc -%}
+  Renders a size chart table from the JSON stored in a size_chart metaobject.
+
+  The first column is the size label (S, M, L...). Every other cell keeps its
+  original text in data-raw, so assets/size-chart.js can convert inches and
+  centimeters without losing precision. Text that isn't a number, like
+  "One size", is shown as-is.
+
+  A column can be a plain label ("Chest") or an object such as
+  { "label": "EU size", "measurement": false } for numbers that must never be
+  converted (shoe sizes, ages...).
+
+  @param {object} chart_data - Parsed JSON: { "columns": [...], "rows": [[...], ...] }
+  @param {string} source_unit - "in" or "cm", the unit the numbers were entered in
+  @param {string} caption - Accessible caption for the table
+  @param {string} section_id - Used to build a unique id
+
+  @example
+  {% render 'size-chart-table', chart_data: chart_data, source_unit: 'in', caption: 'T-shirts', section_id: section.id %}
+{%- enddoc -%}
+
+{%- capture unit_text -%}
+  {%- if source_unit == 'cm' -%}
+    {{- 'sections.size_chart.caption_unit_cm' | t -}}
+  {%- else -%}
+    {{- 'sections.size_chart.caption_unit_in' | t -}}
+  {%- endif -%}
+{%- endcapture -%}
+
+<p class="size-chart__subheading" aria-hidden="true">
+  {{ caption | escape }} (<span data-unit-label>{{ unit_text }}</span>)
+</p>
+<div
+  class="size-chart__table-wrapper"
+  role="region"
+  aria-labelledby="SizeChartCaption-{{ section_id }}"
+  tabindex="0"
+>
+  <table class="size-chart__table">
+    {%- comment -%} Read by screen readers; the visible copy above wraps nicely on phones. {%- endcomment -%}
+    <caption id="SizeChartCaption-{{ section_id }}" class="visually-hidden">
+      {{ caption | escape }} (<span data-unit-label>{{ unit_text }}</span>)
+    </caption>
+    <thead>
+      <tr>
+        {%- for column in chart_data.columns -%}
+          <th scope="col">{{ column.label | default: column | escape }}</th>
+        {%- endfor -%}
+      </tr>
+    </thead>
+    <tbody>
+      {%- for row in chart_data.rows -%}
+        {%- assign row_size = row | first | escape -%}
+        <tr data-size="{{ row_size }}">
+          {%- for cell in row -%}
+            {%- if forloop.first -%}
+              <th scope="row">
+                {{ cell | escape }}
+                <span class="visually-hidden size-chart__selected-label">{{ 'sections.size_chart.selected_size' | t }}</span>
+              </th>
+            {%- else -%}
+              {%- assign column = chart_data.columns[forloop.index0] -%}
+              {%- if column.measurement == false -%}
+                <td>{{ cell | escape }}</td>
+              {%- else -%}
+                <td data-raw="{{ cell | escape }}">{{ cell | escape }}</td>
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </tr>
+      {%- endfor -%}
+    </tbody>
+  </table>
+</div>
