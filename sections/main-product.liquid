@@ -452,6 +452,8 @@
                       </volume-pricing>
                     {%- endif -%}
                   </div>
+                {%- when 'size_chart_button' -%}
+                  {% render 'size-chart-trigger', label: block.settings.label, block: block %}
                 {%- when 'popup' -%}
                   <modal-opener
                     class="product-popup-modal__opener quick-add-hidden"
@@ -1216,6 +1218,23 @@
           "type": "page",
           "id": "page",
           "label": "t:sections.main-product.blocks.collapsible_tab.settings.page.label"
+        }
+      ]
+    },
+    {
+      "type": "size_chart_button",
+      "name": "Size chart button",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Opens the Size chart section. Hidden on products without a size chart."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Size chart"
         }
       ]
     },
