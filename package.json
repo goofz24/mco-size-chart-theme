@@ -1,0 +1,22 @@
+{
+  "name": "mco-size-chart-theme",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dawn-based Shopify theme with a metafield-driven size chart section and GA4/GTM events.",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "scripts": {
+    "test": "node --test \"tests/unit/*.test.js\"",
+    "test:browser": "node --test \"tests/browser/*.test.js\"",
+    "test:all": "node --test \"tests/unit/*.test.js\" \"tests/browser/*.test.js\"",
+    "theme-check": "shopify theme check",
+    "dev": "shopify theme dev"
+  },
+  "devDependencies": {
+    "axe-core": "4.10.3",
+    "liquidjs": "10.21.1",
+    "playwright": "1.63.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
