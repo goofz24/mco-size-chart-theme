@@ -1,99 +1,82 @@
-# Dawn
+# MCO Size Chart Theme
 
-[![Build status](https://github.com/shopify/dawn/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Shopify/dawn/actions/workflows/ci.yml?query=branch%3Amain)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?color=informational)](/.github/CONTRIBUTING.md)
+A Shopify theme based on [Dawn](https://github.com/Shopify/dawn) v16.1.1 that adds a reusable **size chart section** driven by metaobjects, and sends **size chart events to GA4 through Google Tag Manager**.
 
-[Getting started](#getting-started) |
-[Staying up to date with Dawn changes](#staying-up-to-date-with-dawn-changes) |
-[Developer tools](#developer-tools) |
-[Contributing](#contributing) |
-[Code of conduct](#code-of-conduct) |
-[Theme Store submission](#theme-store-submission) |
-[License](#license)
+Built by Melvin Carmona Ortiz ([MCO WebLab](https://mcoweblab.com)) with Claude Code, for a Shopify development store.
 
-Dawn represents a HTML-first, JavaScript-only-as-needed approach to theme development. It's Shopify's first source available theme with performance, flexibility, and [Online Store 2.0 features](https://www.shopify.com/partners/blog/shopify-online-store) built-in and acts as a reference for building Shopify themes.
+![Size chart pop-up on desktop](docs/images/size-chart-desktop.png)
 
-* **Web-native in its purest form:** Themes run on the [evergreen web](https://www.w3.org/2001/tag/doc/evergreen-web/). We leverage the latest web browsers to their fullest, while maintaining support for the older ones through progressive enhancement—not polyfills.
-* **Lean, fast, and reliable:** Functionality and design defaults to “no” until it meets this requirement. Code ships on quality. Themes must be built with purpose. They shouldn’t support each and every feature in Shopify.
-* **Server-rendered:** HTML must be rendered by Shopify servers using Liquid. Business logic and platform primitives such as translations and money formatting don’t belong on the client. Async and on-demand rendering of parts of the page is OK, but we do it sparingly as a progressive enhancement.
-* **Functional, not pixel-perfect:** The Web doesn’t require each page to be rendered pixel-perfect by each browser engine. Using semantic markup, progressive enhancement, and clever design, we ensure that themes remain functional regardless of the browser.
+## What it does
 
-You can find a more detailed version of our theme code principles in the [contribution guide](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md#theme-code-principles).
+- **One chart, many products.** Size charts are `size_chart` metaobjects. Each product points to one through the `custom.size_chart` metafield, so 40 T-shirts can share a single "Unisex tees" chart. A fallback chart can be picked in the theme editor for products without their own.
+- **Theme editor settings.** Pop-up or on-page display, heading, which unit shows first, the inches/centimeters switch, "how to measure" tip blocks and a color scheme. Merchants change these without code.
+- **Inches and centimeters.** The switch converts every measurement, including ranges like `34-36`, and always converts from the original value so switching back and forth never drifts.
+- **Knows the selected size.** When the shopper picks a size (option named `Size` or `Talla`, configurable), the matching row is highlighted.
+- **Bilingual.** Storefront text in English and Spanish (`locales/`).
+- **Analytics.** Three events go to `window.dataLayer` for Google Tag Manager and to `Shopify.analytics.publish` for Shopify Custom Pixels:
 
-## Getting started
-We recommend using Dawn as a starting point for theme development. [Learn more on Shopify.dev](https://shopify.dev/themes/getting-started/create).
+| Event | When | Main parameters |
+|---|---|---|
+| `size_chart_open` | Pop-up opened, or on-page chart scrolled into view (once) | `product_id`, `chart_name`, `unit`, `open_trigger` |
+| `size_chart_unit_change` | Shopper switches inches/centimeters | `unit` |
+| `size_select` | Shopper picks a different size | `size`, `variant_id`, `size_in_chart`, `chart_viewed` |
 
-> If you're building a theme for the Shopify Theme Store, then you can use Dawn as a starting point. However, the theme that you submit needs to be [substantively different from Dawn](https://shopify.dev/themes/store/requirements#uniqueness) so that it provides added value for merchants. Learn about the [ways that you can use Dawn](https://shopify.dev/themes/tools/dawn#ways-to-use-dawn).
+`chart_viewed` answers a useful question: did shoppers who picked a size look at the chart first?
 
-Please note that the main branch may include code for features not yet released. The "stable" version of Dawn is available in the theme store.
+## Files added or changed
 
-## Staying up to date with Dawn changes
+| File | What it is |
+|---|---|
+| `sections/size-chart.liquid` | The section, its settings (`{% schema %}`) and the data lookup |
+| `snippets/size-chart-table.liquid` | Renders the table from the chart's JSON |
+| `snippets/size-chart-trigger.liquid` | The "Size chart" button |
+| `assets/size-chart.js` | `<size-chart>` custom element, unit conversion, events |
+| `assets/component-size-chart.css` | Styles, using Dawn's color scheme variables |
+| `snippets/google-tag-manager.liquid` | Loads GTM from Theme settings; skipped in the theme editor |
+| `sections/main-product.liquid` | New "Size chart button" block (small change to a Dawn file) |
+| `templates/product.json` | Adds the button and the section to the default product page |
+| `config/settings_schema.json` | New "Google Tag Manager" settings group |
+| `layout/theme.liquid` | Two lines that render the GTM snippet |
+| `locales/en.default.json`, `locales/es.json` | Storefront text |
 
-Say you're building a new theme off Dawn but you still want to be able to pull in the latest changes, you can add a remote `upstream` pointing to this Dawn repository.
+## Setup
 
-1. Navigate to your local theme folder.
-2. Verify the list of remotes and validate that you have both an `origin` and `upstream`:
-```sh
-git remote -v
-```
-3. If you don't see an `upstream`, you can add one that points to Shopify's Dawn repository:
-```sh
-git remote add upstream https://github.com/Shopify/dawn.git
-```
-4. Pull in the latest Dawn changes into your repository:
-```sh
-git fetch upstream
-git pull upstream main
-```
+1. [Metafield and metaobject definitions](docs/metafields.md) (about 10 minutes in the Shopify admin).
+2. Run the theme: `shopify theme dev --store your-store` (needs [Shopify CLI](https://shopify.dev/docs/storefronts/themes/tools/cli)).
+3. [Google Tag Manager and GA4 setup](docs/gtm-ga4.md).
 
-## Developer tools
+How the pieces fit together: [docs/how-it-works.md](docs/how-it-works.md).
 
-There are a number of really useful tools that the Shopify Themes team uses during development. Dawn is already set up to work with these tools.
-
-### Shopify CLI
-
-[Shopify CLI](https://github.com/Shopify/shopify-cli) helps you build Shopify themes faster and is used to automate and enhance your local development workflow. It comes bundled with a suite of commands for developing Shopify themes—everything from working with themes on a Shopify store (e.g. creating, publishing, deleting themes) or launching a development server for local theme development.
-
-You can follow this [quick start guide for theme developers](https://shopify.dev/docs/themes/tools/cli) to get started.
-
-### Theme Check
-
-We recommend using [Theme Check](https://github.com/shopify/theme-check) as a way to validate and lint your Shopify themes.
-
-We've added Theme Check to Dawn's [list of VS Code extensions](/.vscode/extensions.json) so if you're using Visual Studio Code as your code editor of choice, you'll be prompted to install the [Theme Check VS Code](https://marketplace.visualstudio.com/items?itemName=Shopify.theme-check-vscode) extension upon opening VS Code after you've forked and cloned Dawn.
-
-You can also run it from a terminal with the following Shopify CLI command:
+## Tests
 
 ```bash
-shopify theme check
+npm install
+npm test                       # unit and Liquid render tests (32)
+npx playwright install chromium   # first time only
+npm run test:browser           # browser tests in headless Chromium (12)
+npm run theme-check            # Shopify Theme Check
 ```
 
-### Continuous Integration
+- **Liquid render tests** run the real section and snippets through [LiquidJS](https://liquidjs.com) with stand-ins for Shopify-only filters. LiquidJS is close to Shopify's Liquid but not identical, so the development store is still the final check.
+- **Browser tests** load the real CSS and JS, plus Dawn's own `pubsub.js`, and check the pop-up, keyboard use, events, a 320px phone width and [axe](https://github.com/dequelabs/axe-core) results.
+- **Theme Check** reports the same 9 warnings as unmodified Dawn v16.1.1 and nothing from the new files.
 
-Dawn uses [GitHub Actions](https://github.com/features/actions) to maintain the quality of the theme. [This is a starting point](https://github.com/Shopify/dawn/blob/main/.github/workflows/ci.yml) and what we suggest to use in order to ensure you're building better themes. Feel free to build off of it!
+GitHub Actions runs all of this on every push (`.github/workflows/ci.yml`).
 
-#### Shopify/lighthouse-ci-action
+## Status
 
-We love fast websites! Which is why we created [Shopify/lighthouse-ci-action](https://github.com/Shopify/lighthouse-ci-action). This runs a series of [Google Lighthouse](https://developers.google.com/web/tools/lighthouse) audits for the home, product and collections pages on a store to ensure code that gets added doesn't degrade storefront performance over time.
+- [ ] Tested on a Shopify development store
+- [ ] Events checked in GTM Preview and GA4 DebugView
 
-#### Shopify/theme-check-action
+Automated tests pass. Results on a real store will be recorded here once checked.
 
-Dawn runs [Theme Check](#Theme-Check) on every commit via [Shopify/theme-check-action](https://github.com/Shopify/theme-check-action).
+## Known limits
 
-## Contributing
-
-Want to make commerce better for everyone by contributing to Dawn? We'd love your help! Please read our [contributing guide](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md) to learn about our development process, how to propose bug fixes and improvements, and how to build for Dawn.
-
-## Code of conduct
-
-All developers who wish to contribute through code or issues, please first read our [Code of Conduct](https://github.com/Shopify/dawn/blob/main/.github/CODE_OF_CONDUCT.md).
-
-## Theme Store submission
-
-The [Shopify Theme Store](https://themes.shopify.com/) is the place where Shopify merchants find the themes that they'll use to showcase and support their business. As a theme partner, you can create themes for the Shopify Theme Store and reach an international audience of an ever-growing number of entrepreneurs.
-
-Ensure that you follow the list of [theme store requirements](https://shopify.dev/themes/store/requirements) if you're interested in becoming a [Shopify Theme Partner](https://themes.shopify.com/services/themes/guidelines) and building themes for the Shopify platform.
+- GTM loads from the theme, so it only runs on storefront pages. Checkout and thank-you pages need a Shopify Custom Pixel.
+- GTM loads without asking for consent. A store that needs a cookie banner (for example for EU shoppers) should connect it to Shopify's Customer Privacy API and Google Consent Mode first.
+- Column headers come from the chart's JSON, so a Spanish store translates them with Shopify's Translate & Adapt app.
+- The pop-up needs JavaScript. The on-page display works without it, in the chart's original unit.
 
 ## License
 
-Copyright (c) 2021-present Shopify Inc. See [LICENSE](/LICENSE.md) for further details.
+Dawn is © Shopify Inc. and used under the terms in [LICENSE.md](LICENSE.md), which allow its use for themes that work with Shopify.
