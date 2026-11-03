@@ -98,6 +98,12 @@
     return variant[key] !== undefined ? variant[key] : null;
   }
 
+  /** Clicking the pinned measurement again un-pins it; clicking another one switches to it. */
+  function toggleMeasure(current, clicked) {
+    if (!clicked) return current || null;
+    return current === clicked ? null : clicked;
+  }
+
   function variantBelongsToProduct(variant, variantIds) {
     if (!variant || variant.id === undefined || variant.id === null) return false;
     return variantIds.map(String).indexOf(String(variant.id)) !== -1;
@@ -176,6 +182,7 @@
     normalizeSize: normalizeSize,
     findRowIndex: findRowIndex,
     sizeFromVariant: sizeFromVariant,
+    toggleMeasure: toggleMeasure,
     variantBelongsToProduct: variantBelongsToProduct,
     buildOpenEvent: buildOpenEvent,
     buildUnitChangeEvent: buildUnitChangeEvent,
@@ -210,6 +217,8 @@ if (typeof window !== 'undefined' && window.customElements && !window.customElem
         button.addEventListener('click', () => this.setUnit(button.dataset.sizeChartUnit, true));
       });
 
+      this.bindMeasures();
+
       if (this.display === 'modal' && this.dialog) {
         this.onTriggerClick = (event) => {
           const trigger = event.target.closest('[data-size-chart-open]');
@@ -242,6 +251,44 @@ if (typeof window !== 'undefined' && window.customElements && !window.customElem
       if (this.onTriggerClick) document.removeEventListener('click', this.onTriggerClick);
       if (this.unsubscribeVariant) this.unsubscribeVariant();
       if (this.observer) this.observer.disconnect();
+    }
+
+    /**
+     * Fit guide: hovering a measurement column (or its line in the drawing)
+     * previews it; clicking its header button pins it, which also works on
+     * touch screens and with the keyboard.
+     */
+    bindMeasures() {
+      this.pinnedMeasure = null;
+      this.previewMeasure = null;
+      this.querySelectorAll('[data-measure-trigger]').forEach((button) => {
+        button.addEventListener('click', () => {
+          this.pinnedMeasure = this.utils.toggleMeasure(this.pinnedMeasure, button.dataset.measureTrigger);
+          this.renderMeasure();
+        });
+      });
+      this.querySelectorAll('[data-measure]').forEach((element) => {
+        element.addEventListener('pointerenter', () => {
+          this.previewMeasure = element.dataset.measure;
+          this.renderMeasure();
+        });
+        element.addEventListener('pointerleave', () => {
+          this.previewMeasure = null;
+          this.renderMeasure();
+        });
+      });
+    }
+
+    renderMeasure() {
+      const active = this.previewMeasure || this.pinnedMeasure;
+      if (active) {
+        this.dataset.activeMeasure = active;
+      } else {
+        delete this.dataset.activeMeasure;
+      }
+      this.querySelectorAll('[data-measure-trigger]').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.measureTrigger === this.pinnedMeasure));
+      });
     }
 
     readJson(selector, fallback) {

@@ -383,6 +383,10 @@
       "centimeters": "cm",
       "caption_unit_in": "measurements in inches",
       "caption_unit_cm": "measurements in centimeters",
+      "diagram_title": "How to measure",
+      "diagram_hint": "Select a measurement in the table to see where it's taken.",
+      "fit_facts_label": "Fit details",
+      "measures": {"chest": "Chest", "length": "Length", "sleeve": "Sleeve", "waist": "Waist", "hip": "Hip", "inseam": "Inseam", "foot": "Foot length"},
       "selected_size": "(your selected size)",
       "editor_notice": "Size chart: this product has no size chart yet. Link one in the product's \"Size chart\" metafield, or pick a fallback chart in this section's settings. Shoppers don't see this message."
     }

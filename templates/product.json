@@ -79,6 +79,18 @@
     "size-chart": {
       "type": "size-chart",
       "blocks": {
+        "fact_fit": {
+          "type": "fit_fact",
+          "settings": {
+            "text": "Relaxed fit"
+          }
+        },
+        "fact_flat": {
+          "type": "fit_fact",
+          "settings": {
+            "text": "Measured with the garment laid flat"
+          }
+        },
         "tip_chest": {
           "type": "measure_tip",
           "settings": {
@@ -95,6 +107,8 @@
         }
       },
       "block_order": [
+        "fact_fit",
+        "fact_flat",
         "tip_chest",
         "tip_length"
       ],
@@ -107,7 +121,9 @@
         "size_option_names": "Size, Talla",
         "color_scheme": "scheme-1",
         "padding_top": 36,
-        "padding_bottom": 36
+        "padding_bottom": 36,
+        "diagram": "tee",
+        "modal_style": "drawer"
       }
     },
     "disclosures": {

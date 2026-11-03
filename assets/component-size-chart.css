@@ -125,8 +125,8 @@
 }
 
 .size-chart__unit-button[aria-pressed='true'] {
-  color: rgb(var(--color-background));
-  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-button-text));
+  background: rgb(var(--color-button));
 }
 
 .size-chart__unit-button:focus-visible {
@@ -188,7 +188,7 @@
 }
 
 /* Solid colour, so the sticky size cell doesn't show the cells scrolling under it. */
-.size-chart__row--selected th {
+.size-chart__table .size-chart__row--selected th {
   background: linear-gradient(rgba(var(--color-foreground), 0.08), rgba(var(--color-foreground), 0.08)),
     rgb(var(--color-background));
 }
@@ -253,9 +253,251 @@
   font-size: 1.4rem;
 }
 
+/* Side drawer on desktop, bottom sheet on phones */
+.size-chart--drawer .size-chart__dialog {
+  inset: auto 0 0 0;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: 88vh;
+  border-width: var(--popup-border-width) 0 0;
+  border-radius: 1.6rem 1.6rem 0 0;
+}
+
+@media screen and (min-width: 750px) {
+  .size-chart--drawer .size-chart__dialog {
+    inset: 0 0 0 auto;
+    width: min(60rem, 92vw);
+    height: 100%;
+    max-height: 100%;
+    border-width: 0 0 0 var(--popup-border-width);
+    border-radius: 0;
+  }
+}
+
+/* Fit facts */
+.size-chart__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+}
+
+.size-chart__fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 1.4rem;
+  font-size: 1.3rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.2);
+  border-radius: 4rem;
+}
+
+.size-chart__fact-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: rgb(var(--color-button));
+}
+
+/* Fit guide: drawing next to the table */
+.size-chart__body {
+  display: grid;
+  gap: 2rem;
+}
+
+.size-chart__table-column {
+  min-width: 0;
+}
+
+@media screen and (min-width: 990px) {
+  .size-chart--inline.size-chart--has-diagram .size-chart__body {
+    grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.size-chart__diagram {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 22rem;
+}
+
+.size-chart__diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.size-chart__diagram-caption {
+  margin-top: 0.8rem;
+  font-size: 1.2rem;
+  text-align: center;
+  color: rgba(var(--color-foreground), 0.85);
+}
+
+.size-chart__outline {
+  fill: rgba(var(--color-foreground), 0.04);
+  stroke: rgba(var(--color-foreground), 0.5);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.size-chart__outline--detail {
+  fill: none;
+}
+
+.size-chart__line path {
+  fill: none;
+  stroke: rgba(var(--color-foreground), 0.6);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.size-chart__line circle {
+  fill: rgb(var(--color-background));
+  stroke: rgba(var(--color-foreground), 0.6);
+  stroke-width: 1.5;
+}
+
+.size-chart__line text {
+  font-family: var(--font-body-family);
+  font-size: 11px;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: rgb(var(--color-foreground));
+}
+
+.size-chart[data-active-measure='chest'] .size-chart__line[data-measure='chest'] path,
+.size-chart[data-active-measure='length'] .size-chart__line[data-measure='length'] path,
+.size-chart[data-active-measure='sleeve'] .size-chart__line[data-measure='sleeve'] path,
+.size-chart[data-active-measure='waist'] .size-chart__line[data-measure='waist'] path,
+.size-chart[data-active-measure='hip'] .size-chart__line[data-measure='hip'] path,
+.size-chart[data-active-measure='inseam'] .size-chart__line[data-measure='inseam'] path,
+.size-chart[data-active-measure='foot'] .size-chart__line[data-measure='foot'] path {
+  stroke: rgb(var(--color-button));
+  stroke-width: 3;
+}
+
+.size-chart[data-active-measure='chest'] .size-chart__line[data-measure='chest'] circle,
+.size-chart[data-active-measure='length'] .size-chart__line[data-measure='length'] circle,
+.size-chart[data-active-measure='sleeve'] .size-chart__line[data-measure='sleeve'] circle,
+.size-chart[data-active-measure='waist'] .size-chart__line[data-measure='waist'] circle,
+.size-chart[data-active-measure='hip'] .size-chart__line[data-measure='hip'] circle,
+.size-chart[data-active-measure='inseam'] .size-chart__line[data-measure='inseam'] circle,
+.size-chart[data-active-measure='foot'] .size-chart__line[data-measure='foot'] circle {
+  fill: rgb(var(--color-button));
+  stroke: rgb(var(--color-button));
+}
+
+.size-chart[data-active-measure='chest'] .size-chart__line[data-measure='chest'] text,
+.size-chart[data-active-measure='length'] .size-chart__line[data-measure='length'] text,
+.size-chart[data-active-measure='sleeve'] .size-chart__line[data-measure='sleeve'] text,
+.size-chart[data-active-measure='waist'] .size-chart__line[data-measure='waist'] text,
+.size-chart[data-active-measure='hip'] .size-chart__line[data-measure='hip'] text,
+.size-chart[data-active-measure='inseam'] .size-chart__line[data-measure='inseam'] text,
+.size-chart[data-active-measure='foot'] .size-chart__line[data-measure='foot'] text {
+  fill: rgb(var(--color-button-text));
+}
+
+.size-chart[data-active-measure='chest'] .size-chart__table [data-measure='chest'],
+.size-chart[data-active-measure='length'] .size-chart__table [data-measure='length'],
+.size-chart[data-active-measure='sleeve'] .size-chart__table [data-measure='sleeve'],
+.size-chart[data-active-measure='waist'] .size-chart__table [data-measure='waist'],
+.size-chart[data-active-measure='hip'] .size-chart__table [data-measure='hip'],
+.size-chart[data-active-measure='inseam'] .size-chart__table [data-measure='inseam'],
+.size-chart[data-active-measure='foot'] .size-chart__table [data-measure='foot'] {
+  background-color: rgba(var(--color-button), 0.1);
+}
+
+/* Measurement buttons in the table header */
+.size-chart__measure {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 4.4rem;
+  margin: -1rem -0.4rem;
+  padding: 0 0.4rem;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.size-chart__measure:focus-visible {
+  outline: var(--focused-base-outline);
+  outline-offset: 0.2rem;
+}
+
+.size-chart__measure-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.1rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.6);
+  border-radius: 50%;
+}
+
+.size-chart__measure[aria-pressed='true'] .size-chart__measure-number,
+.size-chart[data-active-measure='chest'] [data-measure-trigger='chest'] .size-chart__measure-number,
+.size-chart[data-active-measure='length'] [data-measure-trigger='length'] .size-chart__measure-number,
+.size-chart[data-active-measure='sleeve'] [data-measure-trigger='sleeve'] .size-chart__measure-number,
+.size-chart[data-active-measure='waist'] [data-measure-trigger='waist'] .size-chart__measure-number,
+.size-chart[data-active-measure='hip'] [data-measure-trigger='hip'] .size-chart__measure-number,
+.size-chart[data-active-measure='inseam'] [data-measure-trigger='inseam'] .size-chart__measure-number,
+.size-chart[data-active-measure='foot'] [data-measure-trigger='foot'] .size-chart__measure-number {
+  color: rgb(var(--color-button-text));
+  background: rgb(var(--color-button));
+  border-color: rgb(var(--color-button));
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .size-chart__dialog[open] {
     animation: size-chart-fade-in 0.2s ease-out;
+  }
+
+  .size-chart--drawer .size-chart__dialog[open] {
+    animation: size-chart-sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .size-chart__table th,
+  .size-chart__table td,
+  .size-chart__line path,
+  .size-chart__line circle,
+  .size-chart__measure-number {
+    transition: background-color 0.2s ease, fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 750px) {
+  .size-chart--drawer .size-chart__dialog[open] {
+    animation-name: size-chart-drawer-in;
+  }
+}
+
+@keyframes size-chart-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes size-chart-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
   }
 }
 

@@ -1,0 +1,97 @@
+{%- doc -%}
+  Fit guide drawing: a simple garment outline with numbered measurement lines.
+  Each line has data-measure="<key>", the same key as its table column, so
+  assets/size-chart.js and the CSS can light up a line and its column together.
+
+  Drawn for this theme as plain SVG: no images, fonts or libraries.
+
+  @param {string} diagram - "tee", "pants" or "shoe"
+  @param {string} section_id - Used to build a unique id
+
+  @example
+  {% render 'size-chart-diagram', diagram: 'tee', section_id: section.id %}
+{%- enddoc -%}
+
+{%- liquid
+  case diagram
+    when 'tee'
+      assign measures = 'chest,length,sleeve' | split: ','
+    when 'pants'
+      assign measures = 'waist,hip,inseam,length' | split: ','
+    when 'shoe'
+      assign measures = 'foot' | split: ','
+    else
+      assign measures = ''
+  endcase
+-%}
+
+{%- if measures != blank -%}
+  {%- capture title -%}
+    {{- 'sections.size_chart.diagram_title' | t -}}:
+    {%- for key in measures -%}
+      {%- case key -%}
+        {%- when 'chest' -%}{%- assign measure_name = 'sections.size_chart.measures.chest' | t -%}
+        {%- when 'length' -%}{%- assign measure_name = 'sections.size_chart.measures.length' | t -%}
+        {%- when 'sleeve' -%}{%- assign measure_name = 'sections.size_chart.measures.sleeve' | t -%}
+        {%- when 'waist' -%}{%- assign measure_name = 'sections.size_chart.measures.waist' | t -%}
+        {%- when 'hip' -%}{%- assign measure_name = 'sections.size_chart.measures.hip' | t -%}
+        {%- when 'inseam' -%}{%- assign measure_name = 'sections.size_chart.measures.inseam' | t -%}
+        {%- when 'foot' -%}{%- assign measure_name = 'sections.size_chart.measures.foot' | t -%}
+      {%- endcase %} {{ forloop.index }} {{ measure_name }}{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  <figure class="size-chart__diagram size-chart__diagram--{{ diagram }}">
+    <svg
+      viewBox="{% if diagram == 'shoe' %}0 0 240 120{% else %}0 0 240 240{% endif %}"
+      role="img"
+      aria-labelledby="SizeChartDiagramTitle-{{ section_id }}"
+      focusable="false"
+    >
+      <title id="SizeChartDiagramTitle-{{ section_id }}">{{ title | strip }}</title>
+
+      {%- case diagram -%}
+        {%- when 'tee' -%}
+          <path class="size-chart__outline" d="M96 30 Q120 48 144 30 L186 44 L226 86 L200 110 L180 94 L180 216 L60 216 L60 94 L40 110 L14 86 L54 44 Z"/>
+          <g class="size-chart__line" data-measure="chest">
+            <path d="M62 102 H178 M62 96 V108 M178 96 V108"/>
+            <circle cx="120" cy="102" r="10"/><text x="120" y="106">1</text>
+          </g>
+          <g class="size-chart__line" data-measure="length">
+            <path d="M94 34 V214 M88 34 H100 M88 214 H100"/>
+            <circle cx="94" cy="160" r="10"/><text x="94" y="164">2</text>
+          </g>
+          <g class="size-chart__line" data-measure="sleeve">
+            <path d="M190 37 L231 80 M186 41 L194 33 M227 84 L235 76"/>
+            <circle cx="210" cy="58" r="10"/><text x="210" y="62">3</text>
+          </g>
+        {%- when 'pants' -%}
+          <path class="size-chart__outline" d="M70 24 H170 L186 224 H134 L120 96 L106 224 H54 Z"/>
+          <path class="size-chart__outline size-chart__outline--detail" d="M70 38 H170"/>
+          <g class="size-chart__line" data-measure="waist">
+            <path d="M70 14 H170 M70 8 V20 M170 8 V20"/>
+            <circle cx="120" cy="14" r="10"/><text x="120" y="18">1</text>
+          </g>
+          <g class="size-chart__line" data-measure="hip">
+            <path d="M64 66 H176 M64 60 V72 M176 60 V72"/>
+            <circle cx="96" cy="66" r="10"/><text x="96" y="70">2</text>
+          </g>
+          <g class="size-chart__line" data-measure="inseam">
+            <path d="M124 100 L136 220 M118 101 L130 99 M130 221 L142 219"/>
+            <circle cx="130" cy="160" r="10"/><text x="130" y="164">3</text>
+          </g>
+          <g class="size-chart__line" data-measure="length">
+            <path d="M200 24 V224 M194 24 H206 M194 224 H206"/>
+            <circle cx="200" cy="124" r="10"/><text x="200" y="128">4</text>
+          </g>
+        {%- when 'shoe' -%}
+          <path class="size-chart__outline" d="M30 62 C30 40 52 34 70 36 C100 38 130 34 160 38 C190 42 214 50 214 66 C214 82 190 88 160 88 C120 90 80 88 56 88 C38 88 30 78 30 62 Z"/>
+          <g class="size-chart__line" data-measure="foot">
+            <path d="M30 104 H214 M30 98 V110 M214 98 V110"/>
+            <circle cx="122" cy="104" r="10"/><text x="122" y="108">1</text>
+          </g>
+      {%- endcase -%}
+    </svg>
+    <figcaption class="size-chart__diagram-caption">{{ 'sections.size_chart.diagram_hint' | t }}</figcaption>
+  </figure>
+{%- endif -%}

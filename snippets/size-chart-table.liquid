@@ -14,10 +14,61 @@
   @param {string} source_unit - "in" or "cm", the unit the numbers were entered in
   @param {string} caption - Accessible caption for the table
   @param {string} section_id - Used to build a unique id
+  @param {string} [diagram_measures] - Comma-separated measurement keys shown in
+    the fit guide drawing, in order (for example "chest,length,sleeve"). Columns
+    that match one get a numbered button that lights up the drawing.
+
+  Columns are matched to a measurement by name (Chest/Pecho, Length/Largo,
+  Sleeve/Manga, Waist/Cintura, Hip/Cadera, Inseam/Entrepierna, Foot/Pie), or
+  explicitly with { "label": "Across", "measure": "chest" }.
 
   @example
   {% render 'size-chart-table', chart_data: chart_data, source_unit: 'in', caption: 'T-shirts', section_id: section.id %}
 {%- enddoc -%}
+
+{%- liquid
+  assign diagram_list = diagram_measures | default: '' | split: ','
+  assign column_measures = ''
+  assign column_numbers = ''
+  for column in chart_data.columns
+    assign key = '-'
+    assign number = '-'
+    if forloop.first == false and diagram_list.size > 0
+      assign label = column.label | default: column | downcase
+      if column.measure != blank
+        assign key = column.measure | downcase | strip
+      elsif label contains 'inseam' or label contains 'entrepierna'
+        assign key = 'inseam'
+      elsif label contains 'foot' or label contains 'pie'
+        assign key = 'foot'
+      elsif label contains 'sleeve' or label contains 'manga'
+        assign key = 'sleeve'
+      elsif label contains 'waist' or label contains 'cintura'
+        assign key = 'waist'
+      elsif label contains 'hip' or label contains 'cadera'
+        assign key = 'hip'
+      elsif label contains 'chest' or label contains 'pecho'
+        assign key = 'chest'
+      elsif label contains 'length' or label contains 'largo'
+        assign key = 'length'
+      endif
+      assign found = false
+      for diagram_key in diagram_list
+        if diagram_key == key
+          assign number = forloop.index
+          assign found = true
+        endif
+      endfor
+      unless found
+        assign key = '-'
+      endunless
+    endif
+    assign column_measures = column_measures | append: key | append: ','
+    assign column_numbers = column_numbers | append: number | append: ','
+  endfor
+  assign column_measures = column_measures | split: ','
+  assign column_numbers = column_numbers | split: ','
+-%}
 
 {%- capture unit_text -%}
   {%- if source_unit == 'cm' -%}
@@ -44,7 +95,17 @@
     <thead>
       <tr>
         {%- for column in chart_data.columns -%}
-          <th scope="col">{{ column.label | default: column | escape }}</th>
+          {%- assign key = column_measures[forloop.index0] -%}
+          {%- if key != blank and key != '-' -%}
+            <th scope="col" data-measure="{{ key }}">
+              <button type="button" class="size-chart__measure" data-measure-trigger="{{ key }}" aria-pressed="false">
+                <span class="size-chart__measure-number" aria-hidden="true">{{ column_numbers[forloop.index0] }}</span>
+                {{- column.label | default: column | escape -}}
+              </button>
+            </th>
+          {%- else -%}
+            <th scope="col">{{ column.label | default: column | escape }}</th>
+          {%- endif -%}
         {%- endfor -%}
       </tr>
     </thead>
@@ -60,10 +121,14 @@
               </th>
             {%- else -%}
               {%- assign column = chart_data.columns[forloop.index0] -%}
+              {%- assign key = column_measures[forloop.index0] -%}
+              {%- if key == blank or key == '-' -%}
+                {%- assign key = '' -%}
+              {%- endif -%}
               {%- if column.measurement == false -%}
-                <td>{{ cell | escape }}</td>
+                <td {% if key != '' %}data-measure="{{ key }}"{% endif %}>{{ cell | escape }}</td>
               {%- else -%}
-                <td data-raw="{{ cell | escape }}">{{ cell | escape }}</td>
+                <td data-raw="{{ cell | escape }}" {% if key != '' %}data-measure="{{ key }}"{% endif %}>{{ cell | escape }}</td>
               {%- endif -%}
             {%- endif -%}
           {%- endfor -%}

@@ -54,6 +54,19 @@
     assign initial_size = product.selected_or_first_available_variant.options[size_option_index]
   endif
 
+  assign diagram = section.settings.diagram
+  case diagram
+    when 'tee'
+      assign diagram_measures = 'chest,length,sleeve'
+    when 'pants'
+      assign diagram_measures = 'waist,hip,inseam,length'
+    when 'shoe'
+      assign diagram_measures = 'foot'
+    else
+      assign diagram = 'none'
+      assign diagram_measures = ''
+  endcase
+
   assign chart_name = size_chart.name.value | default: section.settings.heading
   assign dialog_id = 'SizeChartDialog-' | append: section.id
   assign heading_id = 'SizeChartHeading-' | append: section.id
@@ -78,7 +91,7 @@
   {%- endstyle -%}
 
   <size-chart
-    class="size-chart size-chart--{{ section.settings.display }}"
+    class="size-chart size-chart--{{ section.settings.display }} size-chart--{{ section.settings.modal_style }}{% if diagram != 'none' %} size-chart--has-diagram{% endif %}"
     data-display="{{ section.settings.display }}"
     data-source-unit="{{ source_unit }}"
     data-default-unit="{{ default_unit }}"
@@ -112,21 +125,42 @@
         {%- endif -%}
       </div>
 
-      {% render 'size-chart-table',
-        chart_data: chart_data,
-        source_unit: source_unit,
-        caption: chart_name,
-        section_id: section.id
-      %}
+      {%- assign fit_facts = section.blocks | where: 'type', 'fit_fact' -%}
+      {%- if fit_facts.size > 0 -%}
+        <ul class="size-chart__facts" aria-label="{{ 'sections.size_chart.fit_facts_label' | t }}">
+          {%- for block in fit_facts -%}
+            <li class="size-chart__fact" {{ block.shopify_attributes }}>
+              <span class="size-chart__fact-dot" aria-hidden="true"></span>
+              {{- block.settings.text | escape -}}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      <div class="size-chart__body">
+        {%- if diagram != 'none' -%}
+          {% render 'size-chart-diagram', diagram: diagram, section_id: section.id %}
+        {%- endif -%}
+        <div class="size-chart__table-column">
+          {% render 'size-chart-table',
+            chart_data: chart_data,
+            source_unit: source_unit,
+            caption: chart_name,
+            section_id: section.id,
+            diagram_measures: diagram_measures
+          %}
+        </div>
+      </div>
 
       {%- assign fit_note = size_chart.fit_note.value -%}
       {%- if fit_note != blank -%}
         <p class="size-chart__fit-note">{{ fit_note | escape | newline_to_br }}</p>
       {%- endif -%}
 
-      {%- if section.blocks.size > 0 -%}
+      {%- assign tips = section.blocks | where: 'type', 'measure_tip' -%}
+      {%- if tips.size > 0 -%}
         <div class="size-chart__tips">
-          {%- for block in section.blocks -%}
+          {%- for block in tips -%}
             <div class="size-chart__tip" {{ block.shopify_attributes }}>
               {%- if block.settings.image != blank -%}
                 {{
@@ -178,7 +212,9 @@
   "tag": "section",
   "class": "section size-chart-section",
   "enabled_on": {
-    "templates": ["product"]
+    "templates": [
+      "product"
+    ]
   },
   "settings": [
     {
@@ -197,10 +233,57 @@
       "id": "display",
       "label": "Display",
       "options": [
-        { "value": "modal", "label": "Pop-up (opened by the size chart button)" },
-        { "value": "inline", "label": "On the page" }
+        {
+          "value": "modal",
+          "label": "Pop-up (opened by the size chart button)"
+        },
+        {
+          "value": "inline",
+          "label": "On the page"
+        }
       ],
       "default": "modal"
+    },
+    {
+      "type": "select",
+      "id": "modal_style",
+      "label": "Pop-up style",
+      "options": [
+        {
+          "value": "drawer",
+          "label": "Side drawer (bottom sheet on phones)"
+        },
+        {
+          "value": "centered",
+          "label": "Centered"
+        }
+      ],
+      "default": "drawer"
+    },
+    {
+      "type": "select",
+      "id": "diagram",
+      "label": "Fit guide drawing",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "tee",
+          "label": "T-shirt or top"
+        },
+        {
+          "value": "pants",
+          "label": "Pants"
+        },
+        {
+          "value": "shoe",
+          "label": "Shoe"
+        }
+      ],
+      "default": "none",
+      "info": "Numbered lines match the table's Chest, Length, Sleeve, Waist, Hip, Inseam or Foot columns."
     },
     {
       "type": "text",
@@ -213,8 +296,14 @@
       "id": "heading_size",
       "label": "Heading size",
       "options": [
-        { "value": "h2", "label": "Small" },
-        { "value": "h1", "label": "Medium" }
+        {
+          "value": "h2",
+          "label": "Small"
+        },
+        {
+          "value": "h1",
+          "label": "Medium"
+        }
       ],
       "default": "h2"
     },
@@ -229,9 +318,18 @@
       "id": "default_unit",
       "label": "Unit shown first",
       "options": [
-        { "value": "source", "label": "Same as the chart" },
-        { "value": "in", "label": "Inches" },
-        { "value": "cm", "label": "Centimeters" }
+        {
+          "value": "source",
+          "label": "Same as the chart"
+        },
+        {
+          "value": "in",
+          "label": "Inches"
+        },
+        {
+          "value": "cm",
+          "label": "Centimeters"
+        }
       ],
       "default": "source"
     },
@@ -274,6 +372,19 @@
     }
   ],
   "blocks": [
+    {
+      "type": "fit_fact",
+      "name": "Fit fact",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Relaxed fit"
+        }
+      ]
+    },
     {
       "type": "measure_tip",
       "name": "How to measure tip",

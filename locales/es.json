@@ -394,6 +394,10 @@
       "centimeters": "cm",
       "caption_unit_in": "medidas en pulgadas",
       "caption_unit_cm": "medidas en centímetros",
+      "diagram_title": "Cómo medir",
+      "diagram_hint": "Selecciona una medida en la tabla para ver dónde se toma.",
+      "fit_facts_label": "Detalles de ajuste",
+      "measures": {"chest": "Pecho", "length": "Largo", "sleeve": "Manga", "waist": "Cintura", "hip": "Cadera", "inseam": "Entrepierna", "foot": "Largo del pie"},
       "selected_size": "(tu talla seleccionada)",
       "editor_notice": "Guía de tallas: este producto aún no tiene una guía de tallas. Vincula una en el metacampo \"Size chart\" del producto o elige una guía alternativa en la configuración de esta sección. Los clientes no ven este mensaje."
     }
