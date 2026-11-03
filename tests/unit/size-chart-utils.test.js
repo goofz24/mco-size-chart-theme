@@ -65,6 +65,13 @@ test('sizeFromVariant reads options[] or optionN, and handles missing data', () 
   assert.equal(utils.sizeFromVariant({ id: 3, options: ['Black'] }, 1), null);
 });
 
+test('toggleMeasure pins, switches and un-pins a measurement', () => {
+  assert.equal(utils.toggleMeasure(null, 'chest'), 'chest');
+  assert.equal(utils.toggleMeasure('chest', 'sleeve'), 'sleeve');
+  assert.equal(utils.toggleMeasure('sleeve', 'sleeve'), null);
+  assert.equal(utils.toggleMeasure('chest', ''), 'chest');
+});
+
 test('variantBelongsToProduct compares ids as strings', () => {
   assert.equal(utils.variantBelongsToProduct({ id: 1001 }, [1001, 1002]), true);
   assert.equal(utils.variantBelongsToProduct({ id: '1002' }, [1001, 1002]), true);

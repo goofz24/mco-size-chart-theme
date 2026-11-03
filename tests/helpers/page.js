@@ -14,9 +14,10 @@ const THEME_VARIABLES = `
     --color-background: 247, 245, 240;
     --color-shadow: 28, 31, 26;
     --color-button: 31, 77, 58;
+    --color-button-text: 247, 245, 240;
     --gradient-background: #f7f5f0;
     --font-body-family: Arial, sans-serif;
-    --font-heading-family: Arial, sans-serif;
+    --font-heading-family: Georgia, serif;
     --font-body-scale: 1;
     --font-heading-scale: 1;
     --popup-border-width: 1px;
@@ -29,7 +30,16 @@ const THEME_VARIABLES = `
     --text-boxes-radius: 0px;
     --page-width: 120rem;
   }
-  body { margin: 0; }
+  /* Same base sizes as Dawn's theme.liquid (1rem = 10px). */
+  html { box-sizing: border-box; font-size: calc(var(--font-body-scale) * 62.5%); height: 100%; }
+  body {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: 0.06rem;
+    line-height: calc(1 + 0.8 / var(--font-body-scale));
+    font-family: var(--font-body-family);
+  }
+  @media screen and (min-width: 750px) { body { font-size: 1.6rem; } }
 `;
 
 async function buildPage(options) {
@@ -37,7 +47,7 @@ async function buildPage(options) {
   const { defaults } = sectionDefaults('size-chart');
   const sectionHtml = await renderSection('size-chart', {
     product: opts.product,
-    section: { settings: Object.assign({}, defaults, opts.settings) },
+    section: { settings: Object.assign({}, defaults, opts.settings), blocks: opts.blocks || [] },
     locale: opts.locale,
   });
   const trigger = await renderSnippet('size-chart-trigger', {

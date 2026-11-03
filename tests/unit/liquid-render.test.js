@@ -33,7 +33,7 @@ test('renders the product chart as a pop-up with a full, accessible table', asyn
   assert.equal(count(html, /<tr data-size=/g), 5, 'one row per size');
   assert.equal(count(html, /<th scope="col">/g), 4, 'one header per column');
   assert.equal(count(html, /<th scope="row">/g), 5, 'size column is a row header');
-  assert.match(html, /<td data-raw="34-36">34-36<\/td>/);
+  assert.match(html, /<td data-raw="34-36"\s*>34-36<\/td>/);
   assert.match(html, /<caption id="SizeChartCaption-template--1__size-chart" class="visually-hidden">\s*Unisex tees/);
   assert.match(html, /<p class="size-chart__subheading" aria-hidden="true">\s*Unisex tees/);
   assert.match(html, /Relaxed fit\. Between sizes\?/);
@@ -124,8 +124,8 @@ test('a chart entered in cm keeps cm as the source unit', async () => {
   const html = await renderSection('size-chart', { product: teeProduct({ chart: chart }), section: section() });
   assert.match(html, /data-source-unit="cm"/);
   assert.match(html, /data-default-unit="cm"/);
-  assert.match(html, /<td>40<\/td>/, 'EU size column is not marked for conversion');
-  assert.match(html, /<td data-raw="25">25<\/td>/, 'foot length is marked for conversion');
+  assert.match(html, /<td\s*>40<\/td>/, 'EU size column is not marked for conversion');
+  assert.match(html, /<td data-raw="25"\s*>25<\/td>/, 'foot length is marked for conversion');
   assert.match(html, /<th scope="col">EU size<\/th>/);
 });
 
@@ -196,4 +196,99 @@ test('GTM rejects IDs that are not GTM-XXXX letters and numbers', async () => {
     });
     assert.equal(html.trim(), '', 'should reject ' + JSON.stringify(id));
   }
+});
+
+test('fit guide: the T-shirt drawing has 3 numbered lines that match the table columns', async () => {
+  const html = await renderSection('size-chart', { product: teeProduct(), section: section({ diagram: 'tee' }) });
+  assert.match(html, /<figure class="size-chart__diagram size-chart__diagram--tee">/);
+  assert.match(html, /<title id="SizeChartDiagramTitle-template--1__size-chart">How to measure: 1 Chest, 2 Length, 3 Sleeve<\/title>/);
+  assert.equal(count(html, /<g class="size-chart__line" data-measure="/g), 3);
+  assert.match(html, /data-measure-trigger="chest" aria-pressed="false">\s*<span class="size-chart__measure-number" aria-hidden="true">1<\/span>Chest<\/button>/);
+  assert.match(html, /data-measure-trigger="length"[^>]*>\s*<span[^>]*>2<\/span>Body length/);
+  assert.match(html, /data-measure-trigger="sleeve"[^>]*>\s*<span[^>]*>3<\/span>Sleeve/);
+  assert.match(html, /<td data-raw="34-36" data-measure="chest">/);
+  assert.match(html, /<th scope="col">Size<\/th>/, 'the size column is never a measurement');
+  assert.match(html, /size-chart--has-diagram/);
+});
+
+test('fit guide: Spanish names, explicit keys, and columns the drawing does not show', async () => {
+  const chart = teeSizeChart({
+    chart: {
+      columns: ['Talla', 'Pecho', 'Largo de manga', { label: 'Across', measure: 'length' }, 'Waist'],
+      rows: [['S', 36, 8, 27, 30]],
+    },
+  });
+  const html = await renderSection('size-chart', { product: teeProduct({ chart }), section: section({ diagram: 'tee' }) });
+  assert.match(html, /data-measure-trigger="chest"[^>]*>\s*<span[^>]*>1<\/span>Pecho/);
+  assert.match(html, /data-measure-trigger="sleeve"[^>]*>\s*<span[^>]*>3<\/span>Largo de manga/, 'sleeve wins over length');
+  assert.match(html, /data-measure-trigger="length"[^>]*>\s*<span[^>]*>2<\/span>Across/);
+  assert.match(html, /<th scope="col">Waist<\/th>/, 'no waist line on a T-shirt, so no button');
+  assert.match(html, /<td data-raw="30"\s*>30<\/td>/);
+});
+
+test('fit guide: shoe drawing maps only the foot length column', async () => {
+  const chart = metaobject({ name: 'Shoes', unit: 'cm', chart: require('../../docs/examples/size-chart-shoes-cm.json') });
+  const html = await renderSection('size-chart', { product: teeProduct({ chart }), section: section({ diagram: 'shoe' }) });
+  assert.equal(count(html, /data-measure-trigger=/g), 1);
+  assert.match(html, /data-measure-trigger="foot"[^>]*>\s*<span[^>]*>1<\/span>Foot length/);
+  assert.match(html, /<th scope="col">EU size<\/th>/);
+  assert.match(html, /viewBox="0 0 240 120"/);
+});
+
+test('fit guide: pants drawing numbers waist, hip, inseam and length in order', async () => {
+  const chart = teeSizeChart({
+    chart: { columns: ['Size', 'Waist', 'Hip', 'Inseam', 'Outseam length'], rows: [['30', 30, 38, 30, 41]] },
+  });
+  const html = await renderSection('size-chart', { product: teeProduct({ chart }), section: section({ diagram: 'pants' }) });
+  ['Waist', 'Hip', 'Inseam', 'Outseam length'].forEach((label, i) => {
+    assert.match(html, new RegExp('<span class="size-chart__measure-number" aria-hidden="true">' + (i + 1) + '</span>' + label));
+  });
+});
+
+test('without a drawing there are no measurement buttons', async () => {
+  const html = await renderSection('size-chart', { product: teeProduct(), section: section({ diagram: 'none' }) });
+  assert.doesNotMatch(html, /size-chart__diagram/);
+  assert.doesNotMatch(html, /data-measure/);
+  assert.doesNotMatch(html, /size-chart--has-diagram/);
+});
+
+test('fit facts render as a list above the table; tips stay below', async () => {
+  const html = await renderSection('size-chart', {
+    product: teeProduct(),
+    section: Object.assign(section(), {
+      blocks: [
+        { type: 'measure_tip', shopify_attributes: '', settings: { title: 'Chest', text: '<p>Around.</p>' } },
+        { type: 'fit_fact', shopify_attributes: '', settings: { text: 'Relaxed fit' } },
+        { type: 'fit_fact', shopify_attributes: '', settings: { text: '<b>Pre-shrunk</b>' } },
+      ],
+    }),
+  });
+  assert.match(html, /<ul class="size-chart__facts" aria-label="Fit details">/);
+  assert.equal(count(html, /<li class="size-chart__fact"/g), 2);
+  assert.match(html, /&lt;b&gt;Pre-shrunk/, 'fact text is escaped');
+  assert.ok(html.indexOf('size-chart__facts') < html.indexOf('size-chart__table'), 'facts come before the table');
+  assert.ok(html.indexOf('size-chart__tips') > html.indexOf('size-chart__table'), 'tips come after the table');
+  assert.equal(count(html, /<div class="size-chart__tip" /g), 1);
+});
+
+test('pop-up style adds a class for the drawer or the centered pop-up', async () => {
+  const drawer = await renderSection('size-chart', { product: teeProduct(), section: section() });
+  assert.match(drawer, /class="size-chart size-chart--modal size-chart--drawer/);
+  const centered = await renderSection('size-chart', { product: teeProduct(), section: section({ modal_style: 'centered' }) });
+  assert.match(centered, /size-chart--centered/);
+});
+
+test('Spanish fit guide text', async () => {
+  const html = await renderSection('size-chart', { product: teeProduct(), section: section({ diagram: 'tee' }), locale: 'es' });
+  assert.match(html, /Cómo medir: 1 Pecho, 2 Largo, 3 Manga/);
+  assert.match(html, /Selecciona una medida en la tabla/);
+});
+
+test('the default product template turns on the T-shirt drawing, the drawer and two fit facts', () => {
+  const template = require('../../templates/product.json');
+  const chartSection = template.sections['size-chart'];
+  assert.equal(chartSection.settings.diagram, 'tee');
+  assert.equal(chartSection.settings.modal_style, 'drawer');
+  const facts = Object.values(chartSection.blocks).filter((block) => block.type === 'fit_fact');
+  assert.equal(facts.length, 2);
 });

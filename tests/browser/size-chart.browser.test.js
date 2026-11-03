@@ -297,3 +297,164 @@ test('axe finds no accessibility violations in the open pop-up', async () => {
     await close();
   }
 });
+
+const FIT_GUIDE = {
+  settings: { diagram: 'tee' },
+  blocks: [
+    { type: 'fit_fact', shopify_attributes: '', settings: { text: 'Relaxed fit' } },
+    { type: 'fit_fact', shopify_attributes: '', settings: { text: 'Measured with the garment laid flat' } },
+  ],
+};
+
+async function waitForAnimations(page) {
+  await page.waitForFunction(() => document.getAnimations().length === 0);
+}
+
+test('fit guide: clicking a column header pins its line in the drawing; clicking again un-pins it', async () => {
+  const { page, close } = await openPage(FIT_GUIDE);
+  try {
+    await page.locator('[data-size-chart-open]').click();
+    const chest = page.locator('[data-measure-trigger="chest"]');
+    await chest.click();
+    assert.equal(await chest.getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('size-chart').getAttribute('data-active-measure'), 'chest');
+    await waitForAnimations(page);
+    const width = await page.locator('.size-chart__line[data-measure="chest"] path').evaluate((el) => getComputedStyle(el).strokeWidth);
+    assert.equal(width, '3px');
+    const otherWidth = await page.locator('.size-chart__line[data-measure="sleeve"] path').evaluate((el) => getComputedStyle(el).strokeWidth);
+    assert.equal(otherWidth, '1.5px');
+
+    await page.locator('[data-measure-trigger="sleeve"]').click();
+    assert.equal(await page.locator('size-chart').getAttribute('data-active-measure'), 'sleeve');
+    assert.equal(await chest.getAttribute('aria-pressed'), 'false');
+
+    await page.locator('[data-measure-trigger="sleeve"]').click();
+    assert.equal(await page.locator('[data-measure-trigger="sleeve"]').getAttribute('aria-pressed'), 'false');
+    // Still hovering the sleeve column, so it stays previewed until the pointer leaves.
+    await page.locator('.size-chart__heading').hover();
+    assert.equal(await page.locator('size-chart').getAttribute('data-active-measure'), null);
+  } finally {
+    await close();
+  }
+});
+
+test('fit guide: the keyboard can reach and press the measurement buttons', async () => {
+  const { page, close } = await openPage(FIT_GUIDE);
+  try {
+    await page.locator('[data-size-chart-open]').click();
+    await page.locator('[data-measure-trigger="length"]').focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('size-chart').getAttribute('data-active-measure'), 'length');
+    await page.keyboard.press('Space');
+    assert.equal(await page.locator('size-chart').getAttribute('data-active-measure'), null);
+  } finally {
+    await close();
+  }
+});
+
+test('fit guide: hovering a column previews it, and leaving returns to the pinned one', async () => {
+  const { page, close } = await openPage(FIT_GUIDE);
+  try {
+    await page.locator('[data-size-chart-open]').click();
+    await waitForAnimations(page);
+    await page.locator('[data-measure-trigger="chest"]').click();
+    await page.locator('tbody tr').nth(2).locator('td[data-measure="sleeve"]').hover();
+    assert.equal(await page.locator('size-chart').getAttribute('data-active-measure'), 'sleeve');
+    await page.locator('.size-chart__heading').hover();
+    assert.equal(await page.locator('size-chart').getAttribute('data-active-measure'), 'chest');
+  } finally {
+    await close();
+  }
+});
+
+test('desktop: the pop-up is a full-height drawer on the right', async () => {
+  const { page, close } = await openPage(FIT_GUIDE);
+  try {
+    await page.locator('[data-size-chart-open]').click();
+    await waitForAnimations(page);
+    const box = await page.locator('dialog').boundingBox();
+    assert.ok(Math.abs(box.x + box.width - 1280) < 1, 'touches the right edge: ' + JSON.stringify(box));
+    assert.ok(Math.abs(box.y) < 1 && Math.abs(box.height - 900) < 1, 'full height: ' + JSON.stringify(box));
+    assert.ok(box.width <= 602, 'drawer width ' + box.width + ' (60rem plus a 1px border)');
+    await page.locator('[data-measure-trigger="chest"]').click();
+    await page.mouse.move(5, 5);
+    await waitForAnimations(page);
+    await page.screenshot({ path: require('node:path').join(__dirname, '..', 'screenshots', 'fit-guide-drawer-desktop.png') });
+  } finally {
+    await close();
+  }
+});
+
+test('phone: the pop-up is a bottom sheet, and the page never scrolls sideways', async () => {
+  const { page, close } = await openPage(FIT_GUIDE, { width: 375, height: 760 });
+  try {
+    await page.locator('[data-size-chart-open]').click();
+    await waitForAnimations(page);
+    const box = await page.locator('dialog').boundingBox();
+    assert.ok(Math.abs(box.x) < 1 && Math.abs(box.width - 375) < 1, 'full width: ' + JSON.stringify(box));
+    assert.ok(Math.abs(box.y + box.height - 760) < 1, 'sits on the bottom edge: ' + JSON.stringify(box));
+    assert.ok(box.height <= 760 * 0.88 + 1, 'leaves the page visible above it');
+    assert.ok((await page.evaluate(() => document.documentElement.scrollWidth)) <= 375);
+    await page.screenshot({ path: require('node:path').join(__dirname, '..', 'screenshots', 'fit-guide-sheet-phone.png') });
+  } finally {
+    await close();
+  }
+});
+
+test('centered pop-up style still works', async () => {
+  const { page, close } = await openPage({ settings: { modal_style: 'centered' } });
+  try {
+    await page.locator('[data-size-chart-open]').click();
+    await waitForAnimations(page);
+    const box = await page.locator('dialog').boundingBox();
+    assert.ok(box.x > 50 && box.x + box.width < 1230, 'centered: ' + JSON.stringify(box));
+  } finally {
+    await close();
+  }
+});
+
+test('reduced motion: no animations when the visitor asks for less motion', async () => {
+  const html = await buildPage(Object.assign({ product: teeProduct() }, FIT_GUIDE));
+  const server = await serve(html);
+  const page = await browser.newPage({ reducedMotion: 'reduce', viewport: { width: 1280, height: 900 } });
+  try {
+    await page.goto(server.url);
+    await page.waitForFunction(() => window.customElements.get('size-chart'));
+    await page.locator('[data-size-chart-open]').click();
+    assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
+    const transition = await page.locator('.size-chart__line path').first().evaluate((el) => getComputedStyle(el).transitionDuration);
+    assert.equal(transition, '0s');
+  } finally {
+    await page.close();
+    await server.close();
+  }
+});
+
+test('axe finds no accessibility violations with the fit guide, facts and a pinned measurement', async () => {
+  for (const viewport of [{ width: 1280, height: 900 }, { width: 375, height: 760 }]) {
+    const { page, close } = await openPage(FIT_GUIDE, viewport);
+    try {
+      await page.locator('[data-size-chart-open]').click();
+      await waitForAnimations(page);
+      await page.locator('[data-measure-trigger="chest"]').click();
+      await waitForAnimations(page);
+      await page.addScriptTag({ content: AXE_SOURCE });
+      const result = await page.evaluate(() => window.axe.run(document.querySelector('dialog')));
+      assert.deepEqual(result.violations.map((v) => v.id + ': ' + v.help), [], 'at ' + viewport.width + 'px');
+    } finally {
+      await close();
+    }
+  }
+});
+
+test('inline display with the fit guide: drawing beside the table on wide screens', async () => {
+  const { page, close } = await openPage({ settings: { display: 'inline', diagram: 'tee' }, blocks: FIT_GUIDE.blocks });
+  try {
+    const diagram = await page.locator('.size-chart__diagram').boundingBox();
+    const table = await page.locator('.size-chart__table-wrapper').boundingBox();
+    assert.ok(diagram.x + diagram.width <= table.x, 'drawing sits left of the table');
+    await page.locator('.size-chart__inline').screenshot({ path: require('node:path').join(__dirname, '..', 'screenshots', 'fit-guide-inline-desktop.png') });
+  } finally {
+    await close();
+  }
+});
