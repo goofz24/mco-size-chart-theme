@@ -46,6 +46,14 @@ Saved choices are stored in `templates/product.json`, which is why that file cha
 
 The pure logic (conversion, size matching, event payloads) is in `SizeChartUtils` at the top of the file, with no DOM access, so Node can test it.
 
+## Fit guide
+
+`snippets/size-chart-diagram.liquid` draws the garment as inline SVG. Each measurement line is a `<g data-measure="chest">`. The table snippet gives the matching column cells the same `data-measure` value and puts a numbered button in the header.
+
+- Hovering a cell or line sets `data-active-measure="chest"` on `<size-chart>`; CSS then colors that line and column.
+- The header button pins the measurement (`aria-pressed="true"`), so it works without a mouse.
+- The drawing has a `<title>` ("How to measure: 1 Chest, 2 Length, 3 Sleeve"), so screen readers get the same information.
+
 ## Events
 
 `SizeChartUtils.track()` does two things:

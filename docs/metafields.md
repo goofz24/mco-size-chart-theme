@@ -52,6 +52,7 @@ Rules for the JSON:
 - `columns` is the header row. `rows` is a list of rows, each with one value per column.
 - The **first column is the size**. It must match the product's size option values (`S`, `M`, `L`...) for the row to be highlighted. Case and extra spaces don't matter.
 - Other cells can be numbers (`28`), decimals (`8.25`) or ranges (`"34-36"`). These are converted when the shopper switches units. Any other text (`"One size"`) is shown as-is.
+- **Fit guide drawing:** columns named Chest, Length, Sleeve, Waist, Hip, Inseam or Foot (or Pecho, Largo, Manga, Cintura, Cadera, Entrepierna, Pie) get a numbered button that lights up the drawing. To match a column with another name, write it as an object: `{ "label": "Across", "measure": "chest" }`. Columns the chosen drawing doesn't show stay plain.
 - If a column holds numbers that are **not** measurements, such as EU shoe sizes, write it as an object so it's never converted: `{ "label": "EU size", "measurement": false }`. See [docs/examples/size-chart-shoes-cm.json](examples/size-chart-shoes-cm.json).
 
 ## 4. Link it to a product
