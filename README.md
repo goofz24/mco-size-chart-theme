@@ -62,7 +62,7 @@ How the pieces fit together: [docs/how-it-works.md](docs/how-it-works.md).
 
 ```bash
 npm install
-npm test                       # unit and Liquid render tests (42)
+npm test                       # unit, Liquid render and config tests (45)
 npx playwright install chromium   # first time only
 npm run test:browser           # browser tests in headless Chromium (21)
 npm run theme-check            # Shopify Theme Check
